@@ -48,3 +48,25 @@ def forward_json():
 @app.route("/", methods=["GET"])
 def ping():
     return "FileMaker → Render → Wix API ready.", 200
+import json
+
+@app.route("/update-dropdowns", methods=["POST"])
+def update_dropdowns():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON received"}), 400
+
+    try:
+        with open("dropdowns.json", "w") as f:
+            json.dump(data, f, indent=2)
+        return jsonify({"status": "saved"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/dropdowns.json", methods=["GET"])
+def serve_dropdowns():
+    try:
+        with open("dropdowns.json") as f:
+            return jsonify(json.load(f))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
