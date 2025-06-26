@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import requests
 import logging
 
+
+
 # === Config ===
 WIX_URL = "https://aivs.uk/_functions/post_received"
 WIX_TIMEOUT = 10  # seconds
