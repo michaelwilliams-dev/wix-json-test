@@ -3,7 +3,7 @@ import requests
 import logging
 
 # === Config ===
-WIX_URL = "https://aivs.uk/_functions/post.received"
+WIX_URL = "https://aivs.uk/_functions/post_received"
 WIX_TIMEOUT = 10  # seconds
 WIX_SHARED_SECRET = "michael-2025-secret-key"  # 🔐 must match what Wix expects
 
