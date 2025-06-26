@@ -3,9 +3,9 @@ import requests
 import logging
 
 # === Config ===
-WIX_URL = "https://aivs.uk/_functions/receive"
+WIX_URL = "https://aivs.uk/_functions/post.received"
 WIX_TIMEOUT = 10  # seconds
-WIX_SHARED_SECRET = "your-shared-secret"  # 🔐 must match what Wix expects
+WIX_SHARED_SECRET = "michael-2025-secret-key"  # 🔐 must match what Wix expects
 
 # === App Setup ===
 app = Flask(__name__)
