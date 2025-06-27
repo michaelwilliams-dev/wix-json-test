@@ -51,23 +51,26 @@ def ping():
 @app.route("/update-dropdowns", methods=["POST"])
 def update_dropdowns():
     try:
-        # Step 1: Decode safely, replacing invalid bytes
-        raw_body = request.data.decode("utf-8", errors="replace")
-        print("🔍 RAW BODY RECEIVED (first 300 chars):", raw_body[:300])
+        # Step 1: Read raw bytes and decode like iconv -c (strip invalid UTF-8)
+        raw_bytes = request.data
+        cleaned_str = raw_bytes.decode("utf-8", errors="ignore")  # ⬅️ mimics iconv -c
 
-        # Step 2: Clean smart quotes, BOM, and zero-width characters
-        cleaned = (
-            raw_body
-            .replace("“", '"').replace("”", '"')
-            .replace("‘", "'").replace("’", "'")
-            .replace("\ufeff", "")  # BOM
+        print("🔍 RAW BODY RECEIVED (first 300 chars):", cleaned_str[:300])
+
+        # Step 2: Strip smart quotes, BOM, zero-width/invisible characters
+        cleaned_str = (
+            cleaned_str.replace("“", '"')
+                       .replace("”", '"')
+                       .replace("‘", "'")
+                       .replace("’", "'")
+                       .replace("\ufeff", "")  # BOM
         )
-        cleaned = re.sub(r"[\u200b-\u200f]", "", cleaned)
+        cleaned_str = re.sub(r"[\u200b-\u200f]", "", cleaned_str)
 
-        # Step 3: Try to parse the cleaned JSON
-        data = json.loads(cleaned)
+        # Step 3: Parse cleaned JSON
+        data = json.loads(cleaned_str)
 
-        # Step 4: Save to file
+        # Step 4: Save it to a file
         with open("dropdowns.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
