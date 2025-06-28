@@ -28,7 +28,6 @@ def forward_json():
     try:
         logging.info(f"Forwarding to Wix: {data}")
         response = requests.post(WIX_URL, json=data, headers=headers, timeout=WIX_TIMEOUT)
-        logging.info(f"Wix responded with {response.status_code}: {response.text}")
         return jsonify({
             "status": "forwarded",
             "wix_status": response.status_code,
@@ -38,12 +37,3 @@ def forward_json():
     except requests.exceptions.Timeout:
         logging.error("Timeout occurred when forwarding to Wix")
         return jsonify({"error": "Timeout forwarding to Wix"}), 504
-
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Request error: {e}")
-        return jsonify({"error": "Failed to forward to Wix"}), 502
-
-# === NEW: POST /update-dropdowns → same as root ===
-@app.route("/update-dropdowns", methods=["POST"])
-def update_dropdowns():
-    return forward_json()
