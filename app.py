@@ -33,16 +33,7 @@ def forward_json():
             "wix_status": response.status_code,
             "wix_response": response.text
         }), 200
-@app.route("/update-dropdowns", methods=["POST"])
-def update_dropdowns():
-    data = request.get_json()
-    if data is None:
-        return jsonify({"error": "No JSON received"}), 400
 
-    # Log it or process it as needed
-    print("✅ Dropdown JSON received:", data)
-
-    return jsonify({"status": "received", "received": data}), 200
     except requests.exceptions.Timeout:
         logging.error("Timeout occurred when forwarding to Wix")
         return jsonify({"error": "Timeout forwarding to Wix"}), 504
