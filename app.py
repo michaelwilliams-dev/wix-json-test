@@ -1,60 +1,38 @@
 from flask import Flask, request, jsonify
-import requests
 import logging
-import json
-import re
-
-# === Config ===
-WIX_URL = "https://aivs.uk/_functions/post_received"
-WIX_TIMEOUT = 10  # seconds
-WIX_SHARED_SECRET = "michael-2025-secret-key"  # 🔐 must match what Wix expects
 
 # === App Setup ===
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
-# === POST / → forwards JSON to Wix ===
-@app.route("/", methods=["POST"])
-def forward_json():
-    data = request.get_json()
-    if data is None:
-        return jsonify({"error": "No JSON received"}), 400
+# === In-memory store for dropdown data ===
+latest_dropdown_data = {}
 
-    headers = {
-        "Content-Type": "application/json",
-        "X-API-Key": WIX_SHARED_SECRET
-    }
-
-    try:
-        logging.info(f"Forwarding to Wix: {data}")
-        response = requests.post(WIX_URL, json=data, headers=headers, timeout=WIX_TIMEOUT)
-        logging.info(f"Wix responded with {response.status_code}: {response.text}")
-        return jsonify({
-            "status": "forwarded",
-            "wix_status": response.status_code,
-            "wix_response": response.text
-        }), 200
-
-    except requests.exceptions.Timeout:
-        logging.error("Timeout occurred when forwarding to Wix")
-        return jsonify({"error": "Timeout forwarding to Wix"}), 504
-
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Request error: {e}")
-        return jsonify({"error": "Failed to forward to Wix"}), 502
-
-# === NEW: POST /update-dropdowns → same as root ===
+# === POST /update-dropdowns → from FileMaker ===
 @app.route("/update-dropdowns", methods=["POST"])
 def update_dropdowns():
-    return forward_json()
+    global latest_dropdown_data
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON received"}), 400
 
-# === NEW: GET /dropdowns → serve JSON to Bubble ===
+    latest_dropdown_data = data
+    logging.info("✅ Dropdowns received and stored")
+    return jsonify({"status": "stored", "keys": list(data.keys())}), 200
+
+# === GET /dropdowns → Bubble fetches live data ===
 @app.route("/dropdowns", methods=["GET"])
 def serve_dropdowns():
-    try:
-        with open("dropdown_clean.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify(data)
-    except Exception as e:
-        logging.error("❌ Failed to load dropdowns:", exc_info=True)
-        return jsonify({"error": "Dropdown JSON not found", "details": str(e)}), 500
+    global latest_dropdown_data
+    if not latest_dropdown_data:
+        return jsonify({"error": "No dropdown data available"}), 404
+    return jsonify(latest_dropdown_data)
+
+# === GET / → Sanity check ===
+@app.route("/", methods=["GET"])
+def home():
+    return "Bubble dropdown service is live", 200
+
+# === Main Runner ===
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
