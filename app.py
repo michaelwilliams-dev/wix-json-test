@@ -28,11 +28,11 @@ def serve_dropdowns():
         return jsonify({"error": "No dropdown data available"}), 404
     return jsonify(latest_dropdown_data)
 
-# === GET / → Sanity check ===
+# === GET / → Just for sanity check
 @app.route("/", methods=["GET"])
 def home():
-    return "Bubble dropdown service is live", 200
+    return "✅ Bubble Dropdown Service is Running", 200
 
-# === Main Runner ===
+# === Only used for local testing (Render uses gunicorn) ===
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
