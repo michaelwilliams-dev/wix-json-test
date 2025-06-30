@@ -47,14 +47,3 @@ def forward_json():
 @app.route("/update-dropdowns", methods=["POST"])
 def update_dropdowns():
     return forward_json()
-
-# === NEW: GET /dropdowns → serve JSON to Bubble ===
-@app.route("/dropdowns", methods=["GET"])
-def serve_dropdowns():
-    try:
-        with open("dropdown_clean.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify(data)
-    except Exception as e:
-        logging.error("❌ Failed to load dropdowns:", exc_info=True)
-        return jsonify({"error": "Dropdown JSON not found", "details": str(e)}), 500
